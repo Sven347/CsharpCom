@@ -1,0 +1,109 @@
+<html>
+<head>
+    <meta name="GENERATOR" content="Microsoft Visual Studio">
+    <title></title>
+    <script>
+        var sdnGPY;
+        //打开评价器
+        function sdnOpen() {
+            sdnGPY = document.getElementById("sdnGPY");
+            alert(sdnGPY.bStartPlay());
+        }
+        function sdnDestory()
+        {
+            alert("destory");
+            sdnGPY = document.getElementById("sdnGPY");
+            alert(sdnGPY.bStopPlay());
+        }
+
+        function sdnStartPlay2()
+        {
+            sdnGPY = document.getElementById("sdnGPY");
+            alert(sdnGPY.bStartPlay2(0));
+        }
+        function bStartPlayRotate()
+        {
+            sdnGPY = document.getElementById("sdnGPY");
+            alert(sdnGPY.bStartPlayRotate(180));
+        }
+
+        function lGetExposureMin()
+        {
+            sdnGPY = document.getElementById("sdnGPY");
+            alert(sdnGPY.lGetExposureMin());
+        }
+        function vSetExposure() {
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.vSetExposure(8);
+        }
+        function vSetResolutionEx() {
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.vSetResolutionEx(1,1);
+        }
+        function bSetMode() {
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.bSetMode(3);
+        }
+        function bSaveJPG() {
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.bSaveJPG("D:\\","sdn");
+        }
+        function sGetImageBase64() {
+            sdnGPY = document.getElementById("sdnGPY");
+            // var ss = sdnGPY.sGetImageBase64(3);
+            var ss = sdnGPY.sGetBase64();
+            alert(ss);
+            document.getElementById("sdnImg").src = "data:image/jpeg;base64,"+ss;
+        }
+        //上传图片
+        function bUpLoadImageEx() {
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.bUpLoadImageEx("D:\\sdn.JPG", "192.1.6.28", 8765, "tools/UploadImgsHandler.ashx", true, false);
+        }
+
+        function sUpLoadImageEx2() {
+            alert();
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.sUpLoadImageEx2("D:\\sdn.JPG", "192.1.6.28", 8765, "tools/UploadImgsHandler.ashx", true, false);
+        }
+        function vSetWaterPrint() {
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.vSetWaterPrintFontSize(50);
+            sdnGPY.vSetWaterPrintFontColor(0xFFFFFF);
+            sdnGPY.vSetWaterPrintPos(5, 5);
+            sdnGPY.vSetWaterPrint(1, "单氐楠牌水印", 1);
+        }
+        function vSetImageQuality() {
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.vSetImageQuality(50);
+        }
+
+        function sdnTest()
+        {
+            alert();
+            sdnGPY = document.getElementById("sdnGPY");
+            sdnGPY.sdnTest();
+        }
+
+    </script>
+</head>
+<body>
+    <img id="sdnImg" width="500" height="500" src="#" />
+    <object id="sdnGPY" classid="CLSID:454C18E2-8B7D-43C6-8C17-B1825B49D7DE" width="500" height="500"></object>
+    <input type="button" value="打开主摄像头" onclick="sdnOpen()" />
+    <input type="button" value="关闭摄像头" onclick="sdnDestory()" />
+   <input type="button" value="有角度的打开副摄像头" onclick="sdnStartPlay2()" />
+    <input type="button" value="有角度的打开主摄像头" onclick="bStartPlayRotate()" />
+    <input type="button" value="获取最小曝光值" onclick="lGetExposureMin()" />
+    <input type="button" value="设置曝光值" onclick="vSetExposure()" />
+    <input type="button" value="设置分辨率" onclick="vSetResolutionEx()" />
+    <input type="button" value="设置拍照模式" onclick="bSetMode()" />
+    <input type="button" value="保存图片" onclick="bSaveJPG()" />
+    <input type="button" value="获取图片Base64" onclick="sGetImageBase64()" />
+    <input type="button" value="上传图片" onclick="bUpLoadImageEx()" />
+    <input type="button" value="上传图片2" onclick="sUpLoadImageEx2()" />
+    <input type="button" value="设置水印文字" onclick="vSetWaterPrint()" />
+    <input type="button" value="设置JPG图片压缩" onclick="vSetImageQuality()" />
+    <input type="button" value="test" onclick="sdnTest()" />
+</body>
+</html>

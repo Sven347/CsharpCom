@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script >
+        function test(el) {
+            var el = el || window.event;
+            alert(el.srcElement.tagName);
+            alert(el.srcElement.type);
+            alert(el.srcElement.style.width);
+        }
+    </script>
+</head>
+<body>
+    <input type="button" value="test" onclick="test()" style="width:100px;" />
+</body>
+</html>
