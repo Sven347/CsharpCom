@@ -30,11 +30,11 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DoccameraOcx));
             this.panel1 = new System.Windows.Forms.Panel();
-            this.sdnDual = new AxDUALCAMERALIVENESSCONTROLLib.AxDualCameraLivenessControl();
             this.sdnZGOcx = new AxCmCaptureOcxLib.AxCmCaptureOcx();
+            this.sdnDual = new AxDUALCAMERALIVENESSCONTROLLib.AxDualCameraLivenessControl();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sdnDual)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sdnZGOcx)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sdnDual)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -44,17 +44,8 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(994, 618);
+            this.panel1.Size = new System.Drawing.Size(629, 443);
             this.panel1.TabIndex = 0;
-            // 
-            // sdnDual
-            // 
-            this.sdnDual.Enabled = true;
-            this.sdnDual.Location = new System.Drawing.Point(12, 14);
-            this.sdnDual.Name = "sdnDual";
-            this.sdnDual.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("sdnDual.OcxState")));
-            this.sdnDual.Size = new System.Drawing.Size(41, 83);
-            this.sdnDual.TabIndex = 1;
             // 
             // sdnZGOcx
             // 
@@ -65,15 +56,24 @@
             this.sdnZGOcx.Size = new System.Drawing.Size(59, 85);
             this.sdnZGOcx.TabIndex = 0;
             // 
+            // sdnDual
+            // 
+            this.sdnDual.Enabled = true;
+            this.sdnDual.Location = new System.Drawing.Point(12, 14);
+            this.sdnDual.Name = "sdnDual";
+            this.sdnDual.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("sdnDual.OcxState")));
+            this.sdnDual.Size = new System.Drawing.Size(41, 83);
+            this.sdnDual.TabIndex = 1;
+            // 
             // DoccameraOcx
             // 
             this.Controls.Add(this.panel1);
             this.Name = "DoccameraOcx";
-            this.Size = new System.Drawing.Size(994, 618);
+            this.Size = new System.Drawing.Size(629, 443);
             this.Load += new System.EventHandler(this.DoccameraOcx_Load);
             this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.sdnDual)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sdnZGOcx)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sdnDual)).EndInit();
             this.ResumeLayout(false);
 
         }
