@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Threading;
 using System.Reflection;
+using System.Drawing.Imaging;
 
 namespace DoccameraOcx
 {
@@ -21,6 +22,7 @@ namespace DoccameraOcx
     {
         #region 公共变量
         //    AxCmCaptureOcxLib.AxCmCaptureOcx camCaptureOcx = null;//定义全局高拍仪控件变量
+        FaceVerifyWrapper mFaceVerify = new FaceVerifyWrapper();//人脸识别基类
         int lInitOCX = -999;//初始化OCX结果
         int iMainDevNo = 0;//主摄像头序号
         int iDeputyDevNo = 0;//副摄像头序号
@@ -36,6 +38,12 @@ namespace DoccameraOcx
         string sdn_dual = "0";//是否具有双目活体检测功能 0：无 1：有
         string sdn_verify = "0";//是否具有人证比对功能 0：无 1：有
         public byte[] CapturedPackage = null; //识别成功后抓拍到的图片数据
+        public byte[] DBImage = null;//身份证头像招聘
+        string strFaceImg;//双目摄像头抓拍到的人脸图片
+        string strIdentifyNo;//身份证号
+        string strCardName;//身份证上姓名
+        string strPhotoPath;//身份证头像路径
+        string strVerifyScore="1";//人证比对结果1 通过 2未通过
         #endregion
 
         #region 析构与构造函数
@@ -58,7 +66,7 @@ namespace DoccameraOcx
         {
             try
             {
-               // MessageBox.Show("执行析构函数");
+                // MessageBox.Show("执行析构函数");
                 bStopPlay();
             }
             catch { }
@@ -100,6 +108,8 @@ namespace DoccameraOcx
                         lbmsg.Visible = true;//双目摄像头活体检测结果 不可见
                     }
                 }
+                strFaceImg = "";//清空缓存
+                CapturedPackage = null;
             }
             catch { }
         }
@@ -227,9 +237,9 @@ namespace DoccameraOcx
             try
             {//打开第二个tab框
                 if (sdn_dual == "1") //具有双目活体检测
-                { 
+                {
                     sdn_ChangeShow(2);//显示双目摄像头
-                   sdnDual.Initialize();//初始化比对
+                    sdnDual.Initialize();//初始化比对
                     sdnDual.OpenCamera();//打开摄像头
                     sdnDual.StartLiveness();//开始活检
                     return true;
@@ -811,6 +821,30 @@ bRetUI——是否显示结果界面
         /// <returns></returns>
         public string sGetBase64()
         {
+            try
+            {
+                if (sdn_dual == "1") //如果具有双目摄像头 活体检测功能
+                {
+                    if (!string.IsNullOrWhiteSpace(strFaceImg)) //如果当前检测数据不为空，即检测到数据
+                    {
+                        return strFaceImg;
+                    }
+                    else
+                    {
+                        DialogResult dr = MessageBox.Show("活检未完成,请等待完成", "警告", MessageBoxButtons.OKCancel);
+                        if (dr == DialogResult.OK)
+                        {
+                            return strFaceImg;
+                        }
+                        else
+                        {
+                            return strFaceImg;
+                        }
+
+                    }
+                }
+            }
+            catch { }
             if (iDevType == 0)
             { //主摄像头 证件照 只压缩高拍仪不压缩USB摄像头
                 vSetImageQuality(60);//压缩图片，越大压缩越小 质量越好
@@ -858,7 +892,7 @@ bRetUI——是否显示结果界面
 
         private void sdnDual_sdnOnCaptureStatus(object sender, AxsdnDualCameraLivenessLib._DsdnDualCameraLivenessEvents_sdnOnCaptureStatusEvent e)
         {
-            MessageBox.Show(e.lParam + "");
+            // MessageBox.Show(e.lParam + "");
             string cameraTips = "";
             Thread.Sleep(10);
             if (e.wParam == 1)
@@ -880,13 +914,17 @@ bRetUI——是否显示结果界面
         private void sdnDual_OnCaptureSuccessCallbackHandler(object sender, EventArgs e)
         {
             CapturedPackage = Convert.FromBase64String(this.sdnDual.livenessVerificationPackage);
+            strFaceImg = this.sdnDual.capturedFaceImageContent;
             //VisiblePhoto.Image = Bitmap.FromStream(new MemoryStream(byteFaceImage));
             // InfredPhoto.Image = Bitmap.FromStream(new MemoryStream(byteInfredFaceImage));
             //   MessageBox.Show("捕获成功");
             this.lbmsg.Text = "捕获成功";
             this.sdnDual.StopLiveness(); //停止活检
             this.sdnDual.CloseCamera(); //关闭摄像头
-            sdn_Verify();//活体检测成功后自动识别比对
+            if (sdn_verify == "1") //具有前端人脸识别功能
+            {
+                sdn_Verify();//活体检测成功后自动识别比对
+            }
         }
         /// <summary>
         /// 活体检测显示内容
@@ -949,7 +987,96 @@ bRetUI——是否显示结果界面
         /// </summary>
         private void sdn_Verify()
         {
+            GetIndentifyMsg();//读取身份证信息
+            try
+            {
+                int rtn = 0;
+                rtn = mFaceVerify.FaceVerifyInit(".", 2);
+                if (rtn == FaceVerifyWrapper.RTN_LICENSE_ERROR)
+                {
+                    MessageBox.Show("请申请license！", "人脸比对SDK");
+                    return;
+                }
+                else if (rtn != FaceVerifyWrapper.RTN_SUCC)
+                {
+                    MessageBox.Show("初始化失败！", "人脸比对SDK");
+                    return;
+                }
 
+                //以上为人脸识别
+
+                mFaceVerify.ChangeQueryPackage(CapturedPackage); //
+                mFaceVerify.ChangeDBImage(DBImage, 1);
+                double compareNum =0;
+                int tempNum = this.mFaceVerify.CompareDBQuery(ref compareNum);
+                //this.tempNum = this.mFaceVerify.ComparePersonPair(,DBImage ref compareNum);
+                int i = 0;
+                //  MessageBox.Show(compareNum+"");
+                double iMinValue = Convert.ToDouble(new ReadIniFile(Application.StartupPath + @"\sdnsystem.ini").ReadValue("FaceConfig", "faceconfig"));
+                if (compareNum >(iMinValue<60?60:iMinValue) )
+                {
+                    this.lbmsg.ForeColor = Color.Green;//是同一个人显示绿色
+                    this.lbmsg.Text = "是同一个人";
+                    i = 1;
+                    strVerifyScore = "1";
+                }
+                else
+                {
+                    this.lbmsg.ForeColor = Color.Red;
+                    this.lbmsg.Text = "不是同一个人";
+                    i = 0;
+                    strVerifyScore = "0";
+                }
+                try
+                {
+                    mFaceVerify.FaceVerifyUninit();
+                }
+                catch
+                {
+
+                }
+                // MessageBox.Show("222"+strRes);
+            }
+            catch
+            {
+            }
+
+        }
+
+        /// <summary>
+        /// 从本地文件获取图片字节数组
+        /// </summary>
+        private void GetByteImgFromFile(string strImgPath)
+        {
+
+            if (!string.IsNullOrWhiteSpace(strImgPath)) //判断是否为空
+            {
+                string fName = strImgPath;
+                Bitmap bmp = new Bitmap(fName);
+                DBImage = ms.GetBuffer();
+                ms.Close();
+            }
+
+
+        }
+
+        #endregion
+
+        #region 获取身份证信息
+        /// <summary>
+        /// 使用六合一插件获取读卡信息
+        /// </summary>
+        private void GetIndentifyMsg()
+        {
+            try
+            {
+                string strIdentify = axPrinter1.GetQrText();//得到身份证信息
+                string[] arrIdentify = strIdentify.Split('|'); //使用 | 分割读卡数据
+                strCardName = arrIdentify[1];//身份证姓名
+                strIdentifyNo = arrIdentify[6]; //身份证号码
+                strPhotoPath = arrIdentify[10];//身份证头像路径
+            }
+            catch { }
         }
 
         #endregion
@@ -973,6 +1100,6 @@ bRetUI——是否显示结果界面
 
         #endregion
 
-      
+
     }
 }

@@ -69,6 +69,7 @@
     <Compile Include="DoccameraOcx.Designer.cs">
       <DependentUpon>DoccameraOcx.cs</DependentUpon>
     </Compile>
+    <Compile Include="FaceVerifyWrapper.cs" />
     <Compile Include="IDoccameraControl.cs" />
     <Compile Include="IObjectSafety.cs" />
     <Compile Include="JSCaller\IOleClientSite.cs" />
@@ -122,6 +123,14 @@
       <WrapperTool>aximp</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+    <COMReference Include="AxVehPlatForm">
+      <Guid>{52BBD73E-1D97-44BB-8EFD-4D86A1B930F5}</Guid>
+      <VersionMajor>3</VersionMajor>
+      <VersionMinor>3</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>aximp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
     <COMReference Include="CmCaptureOcxLib">
       <Guid>{2E0A2275-9E84-4627-AD5C-5CC0A1F70472}</Guid>
       <VersionMajor>1</VersionMajor>
@@ -144,6 +153,15 @@
       <Guid>{4E63938C-3722-4174-BC1D-54D9C3CEAD19}</Guid>
       <VersionMajor>1</VersionMajor>
       <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="VehPlatForm">
+      <Guid>{52BBD73E-1D97-44BB-8EFD-4D86A1B930F5}</Guid>
+      <VersionMajor>3</VersionMajor>
+      <VersionMinor>3</VersionMinor>
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
