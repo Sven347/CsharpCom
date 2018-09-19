@@ -38,11 +38,11 @@ namespace DoccameraOcx
         string sdn_dual = "0";//是否具有双目活体检测功能 0：无 1：有
         string sdn_verify = "0";//是否具有人证比对功能 0：无 1：有
         public byte[] CapturedPackage = null; //识别成功后抓拍到的图片数据
-        public byte[] DBImage = null;//身份证头像招聘
+     //   public byte[] DBImage = null;//身份证头像招聘
         string strFaceImg;//双目摄像头抓拍到的人脸图片
         string strIdentifyNo;//身份证号
         string strCardName;//身份证上姓名
-        string strPhotoPath;//身份证头像路径
+        string strPhotoBase;//身份证头像Base64 字符串
         string strVerifyScore="1";//人证比对结果1 通过 2未通过
         #endregion
 
@@ -661,6 +661,7 @@ bRetUI——是否显示结果界面
             string cstrResponse = "";
             //输入参数：filePath 要上传的文件路径；serverIP 服务IP；serverPort 服务端口 requestPath 请求页面地址 isDelFile 是否删除本地文件
             //sdnHttpUploadImgs.SendTrack(fileName, serverName, usPort, objectName, cstrResponse, true);
+            GetIndentifyMsg();
             return cstrResponse;//上传文件并得到返回值
         }
         /// <summary>
@@ -812,7 +813,7 @@ bRetUI——是否显示结果界面
         /// <returns></returns>
         public bool bUpLoadImage(string fileName, string serverName, int usPort, string objectName)
         {
-
+          
             return true;
         }
         /// <summary>
@@ -913,6 +914,7 @@ bRetUI——是否显示结果界面
         /// <param name="e"></param>
         private void sdnDual_OnCaptureSuccessCallbackHandler(object sender, EventArgs e)
         {
+            MessageBox.Show("捕获成功");
             CapturedPackage = Convert.FromBase64String(this.sdnDual.livenessVerificationPackage);
             strFaceImg = this.sdnDual.capturedFaceImageContent;
             //VisiblePhoto.Image = Bitmap.FromStream(new MemoryStream(byteFaceImage));
@@ -988,6 +990,8 @@ bRetUI——是否显示结果界面
         private void sdn_Verify()
         {
             GetIndentifyMsg();//读取身份证信息
+            byte[] DBImage = null;
+            DBImage = Convert.FromBase64String(strPhotoBase.Split(',')[1]);//根据身份证头像路径 得到对应的图片字节数组
             try
             {
                 int rtn = 0;
@@ -1046,15 +1050,20 @@ bRetUI——是否显示结果界面
         /// <summary>
         /// 从本地文件获取图片字节数组
         /// </summary>
-        private void GetByteImgFromFile(string strImgPath)
+        private byte[]  GetByteImgFromFile(string strImgPath)
         {
 
             if (!string.IsNullOrWhiteSpace(strImgPath)) //判断是否为空
             {
-                string fName = strImgPath;
-                Bitmap bmp = new Bitmap(fName);
-                DBImage = ms.GetBuffer();
-                ms.Close();
+                //string fName = strImgPath;
+                //Bitmap bmp = new Bitmap(fName);
+
+                //DBImage = ms.GetBuffer();
+                //ms.Close();
+               return File.ReadAllBytes(strImgPath);
+            }else
+            {
+                return null;
             }
 
 
@@ -1071,12 +1080,18 @@ bRetUI——是否显示结果界面
             try
             {
                 string strIdentify = axPrinter1.GetQrText();//得到身份证信息
+                
+                MessageBox.Show(strIdentify);
                 string[] arrIdentify = strIdentify.Split('|'); //使用 | 分割读卡数据
                 strCardName = arrIdentify[1];//身份证姓名
                 strIdentifyNo = arrIdentify[6]; //身份证号码
-                strPhotoPath = arrIdentify[10];//身份证头像路径
+                strPhotoBase = arrIdentify[11];//身份证头像路径
+                
+              
             }
-            catch { }
+            catch(Exception ex) {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         #endregion
