@@ -35,7 +35,10 @@ namespace DoccameraOcx
         string strPath;//当前dll路径
         string sdn_dual = "0";//是否具有双目活体检测功能 0：无 1：有
         string sdn_verify = "0";//是否具有人证比对功能 0：无 1：有
+        public byte[] CapturedPackage = null; //识别成功后抓拍到的图片数据
         #endregion
+
+        #region 析构与构造函数
         public DoccameraOcx()
         {
             InitializeComponent();
@@ -48,8 +51,58 @@ namespace DoccameraOcx
             strPath = Path.GetDirectoryName(path);
 
         }
+        /// <summary>
+        /// 析构函数
+        /// </summary>
+        ~DoccameraOcx()
+        {
+            try
+            {
+               // MessageBox.Show("执行析构函数");
+                bStopPlay();
+            }
+            catch { }
+        }
+        #endregion
 
         #region OCX对外函数
+        /// <summary>
+        /// 根据指定类型切换显示内容
+        /// </summary>
+        /// <param name="iType">1:高拍仪 2：双目摄像头</param>
+        private void sdn_ChangeShow(int iType)
+        {
+            try
+            {
+                if (sdn_dual == "1")
+                {
+                    if (iType == 1) //高拍仪
+                    {
+                        sdnDual.Visible = false;
+                        sdnZGOcx.Visible = true;
+                        sdnZGOcx.Width = panel1.Width;
+                        sdnZGOcx.Height = panel1.Height;
+                        sdnZGOcx.Top = panel1.Top;
+                        sdnZGOcx.Left = panel1.Left;
+                        plShowMsg.Visible = false;//显示结果不可见
+                        lbmsg.Visible = false;//双目摄像头活体检测结果 不可见
+
+                    }
+                    else if (iType == 2) //双目摄像头
+                    {
+                        sdnZGOcx.Visible = false;
+                        sdnDual.Visible = true;
+                        sdnDual.Width = panel1.Width;
+                        sdnDual.Height = panel1.Height - 55;
+                        sdnDual.Top = panel1.Top;
+                        sdnDual.Left = panel1.Left + 100;
+                        plShowMsg.Visible = true;//显示结果不可见
+                        lbmsg.Visible = true;//双目摄像头活体检测结果 不可见
+                    }
+                }
+            }
+            catch { }
+        }
         /// <summary>
         /// 初始化OCX
         /// </summary>
@@ -119,17 +172,7 @@ namespace DoccameraOcx
         /// <returns>TRUE——成功 FALSE——失败</returns>
         public bool bStartPlay()
         {
-            try
-            {//默认打开第一个tab框
-                sdnZGOcx.Visible = true;//高拍仪控件不可见
-                sdnZGOcx.Width = this.Width - 5;
-                MessageBox.Show(this.Width+"");
-                sdnZGOcx.Top = this.Top;
-               // sdnZGOcx.Right = this.Right;
-                sdnZGOcx.Height = this.Height - 5;
-                sdnDual.Visible = false;
-            }
-            catch { }
+            sdn_ChangeShow(1);//显示高拍仪内容
             iDevType = 0;//当前开启主摄像头
             GetDevNo();//初始化设备参数
             if (iDevNo == 0) //如果没有设备
@@ -163,9 +206,9 @@ namespace DoccameraOcx
                 if (sdn_dual == "1") //具有双目活体检测
                 {
                     sdnZGOcx.Visible = false;//高拍仪控件不可见
-                    sdnDual.Width = this.Width - 5;
-                    sdnDual.Height = this.Height - 5;
-                    sdnDual.Visible = true;
+                    sdnDual.Visible = false;
+                    plShowMsg.Visible = false;
+                    lbmsg.Visible = false;
                     sdnDual.StopLiveness();
                     sdnDual.CloseCamera();
                     sdnDual.UnInitialize();
@@ -184,11 +227,10 @@ namespace DoccameraOcx
             try
             {//打开第二个tab框
                 if (sdn_dual == "1") //具有双目活体检测
-                {
-                    int ires = sdnDual.Initialize();//初始化比对
-                    MessageBox.Show(ires + "");
-                    bool blRes = sdnDual.OpenCamera();//打开摄像头
-                    MessageBox.Show(blRes + "");
+                { 
+                    sdn_ChangeShow(2);//显示双目摄像头
+                   sdnDual.Initialize();//初始化比对
+                    sdnDual.OpenCamera();//打开摄像头
                     sdnDual.StartLiveness();//开始活检
                     return true;
                 }
@@ -241,6 +283,7 @@ namespace DoccameraOcx
         /// <returns></returns>
         public bool bStartPlayRotate(short rotate)
         {
+            sdn_ChangeShow(1);//显示高拍仪内容
             iDevType = 0;//当前开启主摄像头
             GetDevNo();//初始化设备参数
             short iRotate;//视频旋转角度
@@ -811,21 +854,100 @@ bRetUI——是否显示结果界面
 
         #endregion
 
-
         #region 双目摄像头
-        /// <summary>
-        /// 显示双目摄像头
-        /// </summary>
-        private void showDualCamera()
+
+        private void sdnDual_sdnOnCaptureStatus(object sender, AxsdnDualCameraLivenessLib._DsdnDualCameraLivenessEvents_sdnOnCaptureStatusEvent e)
         {
-            //先隐藏现有高拍仪插件
-
-
+            MessageBox.Show(e.lParam + "");
+            string cameraTips = "";
+            Thread.Sleep(10);
+            if (e.wParam == 1)
+            {
+                cameraTips = "捕获成功";
+            }
+            else
+            {
+                cameraTips = this.GetTipDualCamera(e.lParam);
+            }
+            lbmsg.Visible = true;
+            this.lbmsg.Text = cameraTips;
         }
         /// <summary>
-        /// 关闭双目摄像头显示
+        /// 识别成功
         /// </summary>
-        private void hideDualCamera()
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void sdnDual_OnCaptureSuccessCallbackHandler(object sender, EventArgs e)
+        {
+            CapturedPackage = Convert.FromBase64String(this.sdnDual.livenessVerificationPackage);
+            //VisiblePhoto.Image = Bitmap.FromStream(new MemoryStream(byteFaceImage));
+            // InfredPhoto.Image = Bitmap.FromStream(new MemoryStream(byteInfredFaceImage));
+            //   MessageBox.Show("捕获成功");
+            this.lbmsg.Text = "捕获成功";
+            this.sdnDual.StopLiveness(); //停止活检
+            this.sdnDual.CloseCamera(); //关闭摄像头
+            sdn_Verify();//活体检测成功后自动识别比对
+        }
+        /// <summary>
+        /// 活体检测显示内容
+        /// </summary>
+        /// <param name="FrameStatus"></param>
+        /// <returns></returns>
+        private string GetTipDualCamera(int FrameStatus)
+        {
+            string strRet = "请正对摄像头,并除去遮挡物";
+            switch (FrameStatus)
+            {
+                case 1:
+                    strRet = "请正对摄像头,并除去遮挡物";
+                    break;
+                case 2:
+                    strRet = "请保持机器前中只有一人";
+                    break;
+                case 300:
+                    strRet = "请注视摄像头";
+                    break;
+                case 401:
+                    strRet = "请稍许靠后站立";
+                    break;
+                case 402:
+                    strRet = "请稍许靠前站立";
+                    break;
+                case 501:
+                    strRet = "请摘下眼镜";
+                    break;
+                case 502:
+                    strRet = "请摘下口罩";
+                    break;
+                case 503:
+                    strRet = "请摘下眼镜";
+                    break;
+                case 600:
+                    strRet = "请保持严肃";
+                    break;
+                case 700:
+                    strRet = "请维持人脸静止，不要晃动";
+                    break;
+
+                case 0:
+                    strRet = "未知问题，请调整摄像头";
+                    break;
+                default:
+                    break;
+            }
+
+            return strRet;
+
+        }
+
+
+        #endregion
+
+        #region 前端人证比对
+        /// <summary>
+        /// 前端人证比对系统
+        /// </summary>
+        private void sdn_Verify()
         {
 
         }
@@ -840,35 +962,17 @@ bRetUI——是否显示结果界面
         /// <param name="e"></param>
         private void DoccameraOcx_Load(object sender, EventArgs e)
         {
-            //  tabMain.TabPages.Remove(tabTwo);
-            // tabOne.Parent = null; 
-            // tabMain.SelectedTab = tabTwo;
-            // sdnZGOcx.Visible = true;
-            //  tabMain.SelectedIndex = 0;
-            // tabMain.SelectedIndex = 1;
-
             ReadIniFile readIni = new ReadIniFile(strPath + "\\sdnsystem.ini");
-            sdn_dual = readIni.ReadValue("dualcamera", "dual");
-            sdn_verify = readIni.ReadValue("dualcamera", "verify");
-        }
-        /// <summary>
-        /// 选项卡发送变化
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void tabMain_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            TabControl tb = (TabControl)sender;
-            tb.Refresh();
-            tb.SelectedTab.Refresh();
-            //tabOne.Update();
-            //tabOne.Show();
-            //    sdnZGOcx.BeginInit();
+            sdn_dual = readIni.ReadValue("dualcamera", "dual"); //是否具有双目活体检测功能
+            sdn_verify = readIni.ReadValue("dualcamera", "verify"); //是否具有人证比对功能
 
-            MessageBox.Show("刷新");
+            //修改控件大小
+
         }
+
+
         #endregion
 
-
+      
     }
 }
