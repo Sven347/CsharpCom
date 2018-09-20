@@ -95,6 +95,7 @@ namespace DoccameraOcx
                         sdnZGOcx.Left = panel1.Left;
                         plShowMsg.Visible = false;//显示结果不可见
                         lbmsg.Visible = false;//双目摄像头活体检测结果 不可见
+                        btnAgain.Visible = false;//比对按钮不可见
 
                     }
                     else if (iType == 2) //双目摄像头
@@ -107,6 +108,7 @@ namespace DoccameraOcx
                         sdnDual.Left = panel1.Left + 100;
                         plShowMsg.Visible = true;//显示结果不可见
                         lbmsg.Visible = true;//双目摄像头活体检测结果 不可见
+                        btnAgain.Visible = false;//比对按钮不可见
                     }
                 }
                 strFaceImg = "";//清空缓存
@@ -1058,6 +1060,7 @@ bRetUI——是否显示结果界面
                     this.lbmsg.Text = "比对失败,请核准是否为本人";
                     i = 0;
                     strVerifyScore = "0";
+                    btnAgain.Visible = true;//比对按钮可见
                 }
                 try
                 {
@@ -1109,8 +1112,15 @@ bRetUI——是否显示结果界面
             try
             {
                 string strIdentify = axPrinter1.GetQrText();//得到身份证信息
-
-                MessageBox.Show(strIdentify);
+                if (string.IsNullOrWhiteSpace(strIdentify))//如果读取身份证信息未空
+                {
+                    DialogResult dr = MessageBox.Show("读取身份证信息失败，请把身份证放到读卡器上再次读卡!", "警告", MessageBoxButtons.OK);
+                    if (dr == DialogResult.OK)
+                    {
+                        GetIndentifyMsg();
+                        return;
+                    }
+                }
                 string[] arrIdentify = strIdentify.Split('|'); //使用 | 分割读卡数据
                 strCardName = arrIdentify[1];//身份证姓名
                 strIdentifyNo = arrIdentify[6]; //身份证号码
@@ -1142,9 +1152,19 @@ bRetUI——是否显示结果界面
 
         }
 
+        /// <summary>
+        /// 再次比对
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnAgain_Click(object sender, EventArgs e)
+        {
+            btnAgain.Visible = false;//比对按钮不可见 点击之后不可见 防止多次点击
+            bStopPlay();
+            bStartPlay2(0);
+        }
 
         #endregion
-
 
     }
 }

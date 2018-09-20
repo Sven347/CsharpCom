@@ -150,6 +150,10 @@ namespace COM.HPE
                         element.action = "INPUT";
                         element.comment = evo.srcElement.getAttribute("name");
                     }
+                    else if (evo.srcElement.getAttribute("type") == "button")
+                    {
+
+                    }
                     break;
                 case "A":
                     //row1["type"] = "Link";

@@ -30,15 +30,16 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DoccameraOcx));
             this.panel1 = new System.Windows.Forms.Panel();
-            this.sdnDual = new AxsdnDualCameraLivenessLib.AxsdnDualCameraLiveness();
             this.plShowMsg = new System.Windows.Forms.Panel();
             this.lbmsg = new System.Windows.Forms.Label();
+            this.btnAgain = new System.Windows.Forms.Button();
             this.sdnZGOcx = new AxCmCaptureOcxLib.AxCmCaptureOcx();
+            this.sdnDual = new AxsdnDualCameraLivenessLib.AxsdnDualCameraLiveness();
             this.axPrinter1 = new AxVehPlatForm.AxPrinter();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.sdnDual)).BeginInit();
             this.plShowMsg.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sdnZGOcx)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sdnDual)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.axPrinter1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -54,20 +55,10 @@
             this.panel1.Size = new System.Drawing.Size(629, 443);
             this.panel1.TabIndex = 0;
             // 
-            // sdnDual
-            // 
-            this.sdnDual.Enabled = true;
-            this.sdnDual.Location = new System.Drawing.Point(3, 14);
-            this.sdnDual.Name = "sdnDual";
-            this.sdnDual.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("sdnDual.OcxState")));
-            this.sdnDual.Size = new System.Drawing.Size(100, 50);
-            this.sdnDual.TabIndex = 3;
-            this.sdnDual.sdnOnCaptureStatus += new AxsdnDualCameraLivenessLib._DsdnDualCameraLivenessEvents_sdnOnCaptureStatusEventHandler(this.sdnDual_sdnOnCaptureStatus);
-            this.sdnDual.OnCaptureSuccessCallbackHandler += new System.EventHandler(this.sdnDual_OnCaptureSuccessCallbackHandler);
-            // 
             // plShowMsg
             // 
             this.plShowMsg.BackColor = System.Drawing.Color.White;
+            this.plShowMsg.Controls.Add(this.btnAgain);
             this.plShowMsg.Controls.Add(this.axPrinter1);
             this.plShowMsg.Controls.Add(this.lbmsg);
             this.plShowMsg.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -87,6 +78,17 @@
             this.lbmsg.TabIndex = 0;
             this.lbmsg.Text = "开始活体检测";
             // 
+            // btnAgain
+            // 
+            this.btnAgain.Location = new System.Drawing.Point(134, 14);
+            this.btnAgain.Name = "btnAgain";
+            this.btnAgain.Size = new System.Drawing.Size(52, 23);
+            this.btnAgain.TabIndex = 2;
+            this.btnAgain.Text = "比对";
+            this.btnAgain.UseVisualStyleBackColor = true;
+            this.btnAgain.Visible = false;
+            this.btnAgain.Click += new System.EventHandler(this.btnAgain_Click);
+            // 
             // sdnZGOcx
             // 
             this.sdnZGOcx.Enabled = true;
@@ -95,6 +97,17 @@
             this.sdnZGOcx.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("sdnZGOcx.OcxState")));
             this.sdnZGOcx.Size = new System.Drawing.Size(59, 85);
             this.sdnZGOcx.TabIndex = 0;
+            // 
+            // sdnDual
+            // 
+            this.sdnDual.Enabled = true;
+            this.sdnDual.Location = new System.Drawing.Point(3, 14);
+            this.sdnDual.Name = "sdnDual";
+            this.sdnDual.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("sdnDual.OcxState")));
+            this.sdnDual.Size = new System.Drawing.Size(100, 50);
+            this.sdnDual.TabIndex = 3;
+            this.sdnDual.sdnOnCaptureStatus += new AxsdnDualCameraLivenessLib._DsdnDualCameraLivenessEvents_sdnOnCaptureStatusEventHandler(this.sdnDual_sdnOnCaptureStatus);
+            this.sdnDual.OnCaptureSuccessCallbackHandler += new System.EventHandler(this.sdnDual_OnCaptureSuccessCallbackHandler);
             // 
             // axPrinter1
             // 
@@ -112,10 +125,10 @@
             this.Size = new System.Drawing.Size(629, 443);
             this.Load += new System.EventHandler(this.DoccameraOcx_Load);
             this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.sdnDual)).EndInit();
             this.plShowMsg.ResumeLayout(false);
             this.plShowMsg.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sdnZGOcx)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sdnDual)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.axPrinter1)).EndInit();
             this.ResumeLayout(false);
 
@@ -130,5 +143,6 @@
         private System.Windows.Forms.Label lbmsg;
         private AxsdnDualCameraLivenessLib.AxsdnDualCameraLiveness sdnDual;
         private AxVehPlatForm.AxPrinter axPrinter1;
+        private System.Windows.Forms.Button btnAgain;
     }
 }
