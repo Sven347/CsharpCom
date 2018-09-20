@@ -38,12 +38,12 @@ namespace DoccameraOcx
         string sdn_dual = "0";//是否具有双目活体检测功能 0：无 1：有
         string sdn_verify = "0";//是否具有人证比对功能 0：无 1：有
         public byte[] CapturedPackage = null; //识别成功后抓拍到的图片数据
-     //   public byte[] DBImage = null;//身份证头像招聘
+                                              //   public byte[] DBImage = null;//身份证头像招聘
         string strFaceImg;//双目摄像头抓拍到的人脸图片
         string strIdentifyNo;//身份证号
         string strCardName;//身份证上姓名
         string strPhotoBase;//身份证头像Base64 字符串
-        string strVerifyScore="1";//人证比对结果1 通过 2未通过
+        string strVerifyScore = "0";//人证比对结果1 通过 2未通过
         #endregion
 
         #region 析构与构造函数
@@ -82,6 +82,7 @@ namespace DoccameraOcx
         {
             try
             {
+                strVerifyScore = "0"; //初始化人证比对成绩
                 if (sdn_dual == "1")
                 {
                     if (iType == 1) //高拍仪
@@ -204,6 +205,7 @@ namespace DoccameraOcx
         /// <returns></returns>
         public bool bStopPlay()
         {
+            strVerifyScore = "0"; //初始化人证比对成绩
             GetDevNo();//初始化设备参数
             if (iDevNo == 0)
             {
@@ -238,6 +240,7 @@ namespace DoccameraOcx
             {//打开第二个tab框
                 if (sdn_dual == "1") //具有双目活体检测
                 {
+                    strVerifyScore = "0"; //初始化人证比对成绩
                     sdn_ChangeShow(2);//显示双目摄像头
                     sdnDual.Initialize();//初始化比对
                     sdnDual.OpenCamera();//打开摄像头
@@ -813,7 +816,7 @@ bRetUI——是否显示结果界面
         /// <returns></returns>
         public bool bUpLoadImage(string fileName, string serverName, int usPort, string objectName)
         {
-          
+
             return true;
         }
         /// <summary>
@@ -832,7 +835,7 @@ bRetUI——是否显示结果界面
                     }
                     else
                     {
-                        DialogResult dr = MessageBox.Show("活检未完成,请等待完成", "警告", MessageBoxButtons.OKCancel);
+                        DialogResult dr = MessageBox.Show("活检未完成,请等待完成", "警告", MessageBoxButtons.OK);
                         if (dr == DialogResult.OK)
                         {
                             return strFaceImg;
@@ -842,6 +845,21 @@ bRetUI——是否显示结果界面
                             return strFaceImg;
                         }
 
+                    }
+                }
+                if (sdn_verify == "1") //具有人证比对功能
+                {
+                    if (strVerifyScore == "0") //人证比对未通过
+                    {
+                        DialogResult dr = MessageBox.Show("人证比对未通过，请等待", "警告", MessageBoxButtons.OK);
+                        if (dr == DialogResult.OK)
+                        {
+                            return "";
+                        }
+                        else
+                        {
+                            return "";
+                        }
                     }
                 }
             }
@@ -990,10 +1008,20 @@ bRetUI——是否显示结果界面
         private void sdn_Verify()
         {
             GetIndentifyMsg();//读取身份证信息
+            Directory.SetCurrentDirectory(strPath); //设置当前文件路径
             byte[] DBImage = null;
-            DBImage = Convert.FromBase64String(strPhotoBase.Split(',')[1]);//根据身份证头像路径 得到对应的图片字节数组
+            if (string.IsNullOrWhiteSpace(strPhotoBase) && !strPhotoBase.Contains(','))
+            {
+                DialogResult dr = MessageBox.Show("处理身份证信息失败，请把身份证放到读卡器上再次读卡!", "警告", MessageBoxButtons.OKCancel);
+                if (dr == DialogResult.OK)
+                {
+                    sdn_Verify();
+                }
+                return;
+            }
             try
             {
+                DBImage = Convert.FromBase64String(strPhotoBase.Split(',')[1]);//根据身份证头像路径 得到对应的图片字节数组
                 int rtn = 0;
                 rtn = mFaceVerify.FaceVerifyInit(".", 2);
                 if (rtn == FaceVerifyWrapper.RTN_LICENSE_ERROR)
@@ -1011,23 +1039,23 @@ bRetUI——是否显示结果界面
 
                 mFaceVerify.ChangeQueryPackage(CapturedPackage); //
                 mFaceVerify.ChangeDBImage(DBImage, 1);
-                double compareNum =0;
+                double compareNum = 0;
                 int tempNum = this.mFaceVerify.CompareDBQuery(ref compareNum);
                 //this.tempNum = this.mFaceVerify.ComparePersonPair(,DBImage ref compareNum);
                 int i = 0;
                 //  MessageBox.Show(compareNum+"");
-                double iMinValue = Convert.ToDouble(new ReadIniFile(Application.StartupPath + @"\sdnsystem.ini").ReadValue("FaceConfig", "faceconfig"));
-                if (compareNum >(iMinValue<60?60:iMinValue) )
+                double iMinValue = Convert.ToDouble(new ReadIniFile(strPath + @"\sdnsystem.ini").ReadValue("FaceConfig", "faceconfig"));
+                if (compareNum > (iMinValue < 60 ? 60 : iMinValue))
                 {
                     this.lbmsg.ForeColor = Color.Green;//是同一个人显示绿色
-                    this.lbmsg.Text = "是同一个人";
+                    this.lbmsg.Text = "比对通过";
                     i = 1;
                     strVerifyScore = "1";
                 }
                 else
                 {
                     this.lbmsg.ForeColor = Color.Red;
-                    this.lbmsg.Text = "不是同一个人";
+                    this.lbmsg.Text = "比对失败,请核准是否为本人";
                     i = 0;
                     strVerifyScore = "0";
                 }
@@ -1037,12 +1065,12 @@ bRetUI——是否显示结果界面
                 }
                 catch
                 {
-
                 }
                 // MessageBox.Show("222"+strRes);
             }
-            catch
+            catch (Exception ex)
             {
+                MessageBox.Show("人证比对失败!" + ex.Message);
             }
 
         }
@@ -1050,7 +1078,7 @@ bRetUI——是否显示结果界面
         /// <summary>
         /// 从本地文件获取图片字节数组
         /// </summary>
-        private byte[]  GetByteImgFromFile(string strImgPath)
+        private byte[] GetByteImgFromFile(string strImgPath)
         {
 
             if (!string.IsNullOrWhiteSpace(strImgPath)) //判断是否为空
@@ -1060,8 +1088,9 @@ bRetUI——是否显示结果界面
 
                 //DBImage = ms.GetBuffer();
                 //ms.Close();
-               return File.ReadAllBytes(strImgPath);
-            }else
+                return File.ReadAllBytes(strImgPath);
+            }
+            else
             {
                 return null;
             }
@@ -1080,16 +1109,17 @@ bRetUI——是否显示结果界面
             try
             {
                 string strIdentify = axPrinter1.GetQrText();//得到身份证信息
-                
+
                 MessageBox.Show(strIdentify);
                 string[] arrIdentify = strIdentify.Split('|'); //使用 | 分割读卡数据
                 strCardName = arrIdentify[1];//身份证姓名
                 strIdentifyNo = arrIdentify[6]; //身份证号码
                 strPhotoBase = arrIdentify[11];//身份证头像路径
-                
-              
+
+
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 MessageBox.Show(ex.Message);
             }
         }
