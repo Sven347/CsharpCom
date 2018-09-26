@@ -207,6 +207,7 @@ namespace DoccameraOcx
         /// <returns></returns>
         public bool bStopPlay()
         {
+            sdn_ChangeShow(1);//显示高拍仪内容
             strVerifyScore = "0"; //初始化人证比对成绩
             GetDevNo();//初始化设备参数
             if (iDevNo == 0)
@@ -238,6 +239,7 @@ namespace DoccameraOcx
         /// <returns></returns>
         public bool bStartPlay2(short sRotate)
         {
+            iDevType = 1;//当前开启副摄像头
             try
             {//打开第二个tab框
                 if (sdn_dual == "1") //具有双目活体检测
@@ -255,7 +257,6 @@ namespace DoccameraOcx
             {
                 MessageBox.Show(ex.Message);
             }
-            iDevType = 1;//当前开启副摄像头
             GetDevNo();//初始化设备参数
             short iRotate;//视频旋转角度
             switch (sRotate)
@@ -829,7 +830,7 @@ bRetUI——是否显示结果界面
         {
             try
             {
-                if (sdn_dual == "1") //如果具有双目摄像头 活体检测功能
+                if (sdn_dual == "1" && iDevType == 1) //如果具有双目摄像头 活体检测功能 且当前操作的为双目摄像头
                 {
                     if (!string.IsNullOrWhiteSpace(strFaceImg)) //如果当前检测数据不为空，即检测到数据
                     {
@@ -849,7 +850,7 @@ bRetUI——是否显示结果界面
 
                     }
                 }
-                if (sdn_verify == "1") //具有人证比对功能
+                if (sdn_verify == "1" && iDevType == 1) //具有人证比对功能且当前为双目
                 {
                     if (strVerifyScore == "0") //人证比对未通过
                     {
