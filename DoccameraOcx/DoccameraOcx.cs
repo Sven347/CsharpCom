@@ -667,7 +667,7 @@ bRetUI——是否显示结果界面
             string cstrResponse = "";
             //输入参数：filePath 要上传的文件路径；serverIP 服务IP；serverPort 服务端口 requestPath 请求页面地址 isDelFile 是否删除本地文件
             //sdnHttpUploadImgs.SendTrack(fileName, serverName, usPort, objectName, cstrResponse, true);
-            GetIndentifyMsg();
+          //  GetIndentifyMsg();
             return cstrResponse;//上传文件并得到返回值
         }
         /// <summary>
@@ -1112,20 +1112,20 @@ bRetUI——是否显示结果界面
         {
             try
             {
-                string strIdentify = axPrinter1.GetQrText();//得到身份证信息
-                if (string.IsNullOrWhiteSpace(strIdentify))//如果读取身份证信息未空
-                {
-                    DialogResult dr = MessageBox.Show("读取身份证信息失败，请把身份证放到读卡器上再次读卡!", "警告", MessageBoxButtons.OK);
-                    if (dr == DialogResult.OK)
-                    {
-                        GetIndentifyMsg();
-                        return;
-                    }
-                }
-                string[] arrIdentify = strIdentify.Split('|'); //使用 | 分割读卡数据
-                strCardName = arrIdentify[1];//身份证姓名
-                strIdentifyNo = arrIdentify[6]; //身份证号码
-                strPhotoBase = arrIdentify[11];//身份证头像路径
+                //string strIdentify = axPrinter1.GetQrText();//得到身份证信息
+                //if (string.IsNullOrWhiteSpace(strIdentify))//如果读取身份证信息未空
+                //{
+                //    DialogResult dr = MessageBox.Show("读取身份证信息失败，请把身份证放到读卡器上再次读卡!", "警告", MessageBoxButtons.OK);
+                //    if (dr == DialogResult.OK)
+                //    {
+                //        GetIndentifyMsg();
+                //        return;
+                //    }
+                //}
+                //string[] arrIdentify = strIdentify.Split('|'); //使用 | 分割读卡数据
+                //strCardName = arrIdentify[1];//身份证姓名
+                //strIdentifyNo = arrIdentify[6]; //身份证号码
+                //strPhotoBase = arrIdentify[11];//身份证头像路径
 
 
             }

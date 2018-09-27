@@ -86,7 +86,7 @@
         }
 
         function sdnRedirUrl() {
-            window.location.href = "";
+            window.location.href = "http://10.35.243.57/trffweb";
         }
         
 
@@ -97,7 +97,7 @@
     <object id="sdnGPY" classid="CLSID:454C18E2-8B7D-43C6-8C17-B1825B49D7DE" width="500" height="500"></object>
     <input type="button" value="打开主摄像头" onclick="sdnOpen()" />
     <input type="button" value="关闭摄像头" onclick="sdnDestory()" />
-   <input type="button" value="有角度的打开副摄像头" onclick="sdnStartPlay2()" />
+    <input type="button" value="有角度的打开副摄像头" onclick="sdnStartPlay2()" />
     <input type="button" value="有角度的打开主摄像头" onclick="bStartPlayRotate()" />
     <input type="button" value="获取最小曝光值" onclick="lGetExposureMin()" />
     <input type="button" value="设置曝光值" onclick="vSetExposure()" />
@@ -110,5 +110,120 @@
     <input type="button" value="设置水印文字" onclick="vSetWaterPrint()" />
     <input type="button" value="设置JPG图片压缩" onclick="vSetImageQuality()" />
     <input type="button" value="test" onclick="sdnTest()" />
+    <table width="90%" border="0" align="center" cellpadding="3" cellspacing="0">
+        <tr class="style7">
+            <td width="30%" valign="center" height="217" align="right">
+                <p>
+                    签字区域：
+                </p>
+            </td>
+            <td align="left">
+                <object id="HWPenSign" classid="clsid:05547779-9DC0-414D-9D43-465D105F2579" name="HWPenSign" id="HWPenSign" width=600 height=300></object>
+            </td>
+        </tr>
+    </table>
+    <p style="margin-left: 500px">
+        签名控制：
+        <input id="button11" type="button" value="初始化设备" onclick="return Button11_onclick()" />
+        &nbsp;&nbsp;
+        <input id="button12" type="button" value="关闭设备" onclick="return Button12_onclick()" />
+        &nbsp;&nbsp;
+        <input id="Button5" type="button" value="重新签名" onclick="return Button5_onclick()" />
+        <br /><br />
+        画笔控制：
+        <input id="Button2" type="button" value="画笔颜色" onclick="return Button2_onclick()" />
+        &nbsp;&nbsp;&nbsp;
+        <input id="Button3" type="button" value="笔宽加粗" onclick="return Button3_onclick()" />
+        &nbsp;&nbsp;&nbsp;
+        <input id="Button4" type="button" value="笔宽减细" onclick="return Button4_onclick()" />
+        <br /><br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+        <input id="Button7" type="button" value="压力笔" onclick="return Button7_onclick()" />
+        &nbsp;&nbsp;&nbsp;
+        <input id="Button8" type="button" value="钢笔" onclick="return Button8_onclick()" />
+        <br /><br />
+        Base64:
+        &nbsp;&nbsp;<input id="Button10" type="button" value="Base64Stream" onclick="return Button10_onclick()" />
+        &nbsp;&nbsp;&nbsp;
+        <input id="Button6" type="button" value="保存图像" onclick="return Button6_onclick()" />
+        &nbsp;&nbsp;
+        <br /><br />
+
+
+    </p>
+    <script language="javascript" type="text/javascript">
+
+        penwidth = 3;
+        var obj;
+
+        window.onload = function () {
+            obj = document.getElementById("HWPenSign");
+            // <!--    obj.HWLoadImage("C:\\backImg.jpg");  -->
+            obj.HWSetBkColor(0xE0F8E0);
+            obj.HWSetCtlFrame(2, 0x00000000);
+            obj.HWSetFilePath("e:\\sign.png");
+
+        }
+
+        function Button2_onclick() {
+            obj.HWSetPenColor();
+        }
+
+        function Button3_onclick() {
+            penwidth++;
+            if (penwidth > 5)
+                penwidth = 5;
+            obj.HWSetPenWidth(penwidth);
+
+
+        }
+        function Button4_onclick() {
+            penwidth--;
+            if (penwidth < 1)
+                penwidth = 1;
+            obj.HWSetPenWidth(penwidth);
+
+        }
+        //重新签名
+        function Button5_onclick() {
+            obj.HWClearPenSign();
+        }
+
+        //保存图片
+        function Button6_onclick() {
+            obj.HWSaveFile();
+        }
+
+        function Button7_onclick() {
+            obj.HWSetPenMode(0);
+        }
+
+        function Button8_onclick() {
+            obj.HWSetPenMode(1);
+        }
+
+        //得到64位字节流
+        function Button10_onclick() {
+            var stream;
+            stream = obj.HWGetBase64Stream(2);
+            alert(stream);
+            obj.HWLoadBase64Stream(stream, 2);
+        }
+
+        //初始化设备
+        function Button11_onclick() {
+            res = obj.HWInitialize();
+        }
+        //关闭设备
+        function Button12_onclick() {
+            var stream;
+            stream = obj.HWFinalize();
+        }
+
+        function signForRekTec() {
+            var stream;
+            stream = obj.HWGetBase64Stream(2);
+            alert(stream);
+        }
+    </script>
 </body>
 </html>
