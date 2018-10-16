@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading;
 using System.Reflection;
 using System.Drawing.Imaging;
+using System.Diagnostics;
 
 namespace DoccameraOcx
 {
@@ -37,6 +38,7 @@ namespace DoccameraOcx
         string strPath;//当前dll路径
         string sdn_dual = "0";//是否具有双目活体检测功能 0：无 1：有
         string sdn_verify = "0";//是否具有人证比对功能 0：无 1：有
+        string sdn_readCardType = "0";//获取身份证信息方式 0使用六合一读卡方式  1 内部控制读卡
         public byte[] CapturedPackage = null; //识别成功后抓拍到的图片数据
                                               //   public byte[] DBImage = null;//身份证头像招聘
         string strFaceImg;//双目摄像头抓拍到的人脸图片
@@ -667,7 +669,7 @@ bRetUI——是否显示结果界面
             string cstrResponse = "";
             //输入参数：filePath 要上传的文件路径；serverIP 服务IP；serverPort 服务端口 requestPath 请求页面地址 isDelFile 是否删除本地文件
             //sdnHttpUploadImgs.SendTrack(fileName, serverName, usPort, objectName, cstrResponse, true);
-          //  GetIndentifyMsg();
+            //  GetIndentifyMsg();
             return cstrResponse;//上传文件并得到返回值
         }
         /// <summary>
@@ -1112,26 +1114,108 @@ bRetUI——是否显示结果界面
         {
             try
             {
-                //string strIdentify = axPrinter1.GetQrText();//得到身份证信息
-                //if (string.IsNullOrWhiteSpace(strIdentify))//如果读取身份证信息未空
-                //{
-                //    DialogResult dr = MessageBox.Show("读取身份证信息失败，请把身份证放到读卡器上再次读卡!", "警告", MessageBoxButtons.OK);
-                //    if (dr == DialogResult.OK)
-                //    {
-                //        GetIndentifyMsg();
-                //        return;
-                //    }
-                //}
-                //string[] arrIdentify = strIdentify.Split('|'); //使用 | 分割读卡数据
-                //strCardName = arrIdentify[1];//身份证姓名
-                //strIdentifyNo = arrIdentify[6]; //身份证号码
-                //strPhotoBase = arrIdentify[11];//身份证头像路径
+                if (sdn_readCardType == "0")
+                {
+                    #region 使用六合一插件直接读取
 
+                    string strIdentify = axPrinter1.GetQrText();//得到身份证信息
+                    if (string.IsNullOrWhiteSpace(strIdentify))//如果读取身份证信息未空
+                    {
+                        DialogResult dr = MessageBox.Show("读取身份证信息失败，请把身份证放到读卡器上再次读卡!", "警告", MessageBoxButtons.OK);
+                        if (dr == DialogResult.OK)
+                        {
+                            GetIndentifyMsg();
+                            return;
+                        }
+                    }
+                    string[] arrIdentify = strIdentify.Split('|'); //使用 | 分割读卡数据
+                    strCardName = arrIdentify[1];//身份证姓名
+                    strIdentifyNo = arrIdentify[6]; //身份证号码
+                    strPhotoBase = arrIdentify[11];//身份证头像路径
 
+                    #endregion
+                }
+                else
+                {
+                    #region 通过process 关闭六合一循环读卡进程获取身份证信息
+                    //1 关闭已经打开的process进程
+                    string strFilePath = sdn_CloseCard();//关闭六合一 监控程序  进程
+                                                         //2 读卡获取身份证信息
+                    IdentityCard sdnReadCard = new IdentityCard();
+                    string strResMsg = "";
+                    IDCard sdnIdMsg = sdnReadCard.GetBaseMsg(1, out strResMsg);
+                    strCardName = sdnIdMsg.Name;
+                    strIdentifyNo = sdnIdMsg.CartNo;
+                    strPhotoBase = sdnIdMsg.Photo;//身份证头像路径
+                                                  //3 重新打开process进程
+                    sdn_openCard(strFilePath);
+
+                    #endregion
+                }
+                
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+        }
+        /// <summary>
+        /// 关闭六合一读卡器进程
+        /// </summary>
+        private string sdn_CloseCard()
+        {
+            try
+            {
+                string strFilePath = "";//进程文件路径
+                                        //  Process[] plist = Process.GetProcesses();//得到该计算机上的所有进程
+                Process[] plist = Process.GetProcessesByName("监控程序"); //获取监控程序路径
+                Process sdnProcess = null;
+                foreach (Process p in plist)
+                {
+                    //    if(p.ProcessName=="")
+                    //    {
+                    sdnProcess = p;
+                    strFilePath = p.MainModule.FileName.ToString();//得到该进程的完成路径
+                    // }
+                }
+
+                if (sdnProcess != null)
+                {
+                    sdnProcess.Close();
+                    sdnProcess.Kill();
+
+                }
+                return strFilePath;//返回该进程的完整路径
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// 根据文件全路径打开某个文件
+        /// </summary>
+        /// <param name="strFilePath"></param>
+        private void sdn_openCard(string strFilePath)
+        {
+            try
+            {
+                Process P = new Process();
+                P.StartInfo.UseShellExecute = false;  //这条属性必须设置为false，否则无法以用户模式运行程序
+                P.StartInfo.RedirectStandardError = true;  //以下3条属性MSDN上有详解
+                P.StartInfo.RedirectStandardInput = true;
+                P.StartInfo.RedirectStandardOutput = true;
+                P.StartInfo.CreateNoWindow = false;  //是否显示运行窗口
+                P.StartInfo.FileName = strFilePath; //调用的程序名
+                P.StartInfo.UserName = "administrator"; //指定用户名
+              //  P.StartInfo.Password = password; //指定明码，必须是安全字符串
+                P.StartInfo.Domain = "administrators"; //指定用户名所在域，即所在用户组
+               // P.StartInfo.Arguments = "/c" + "shutdown -f -s"; //调用程序执行的命令
+                P.Start();
+            }
+            catch
+            {
+                
             }
         }
 
@@ -1148,6 +1232,7 @@ bRetUI——是否显示结果界面
             ReadIniFile readIni = new ReadIniFile(strPath + "\\sdnsystem.ini");
             sdn_dual = readIni.ReadValue("dualcamera", "dual"); //是否具有双目活体检测功能
             sdn_verify = readIni.ReadValue("dualcamera", "verify"); //是否具有人证比对功能
+            sdn_readCardType= readIni.ReadValue("dualcamera", "type"); //获取身份证方式
 
             //修改控件大小
 

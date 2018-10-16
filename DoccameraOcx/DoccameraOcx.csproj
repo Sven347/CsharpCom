@@ -70,6 +70,7 @@
       <DependentUpon>DoccameraOcx.cs</DependentUpon>
     </Compile>
     <Compile Include="FaceVerifyWrapper.cs" />
+    <Compile Include="IdentityCard.cs" />
     <Compile Include="IDoccameraControl.cs" />
     <Compile Include="IObjectSafety.cs" />
     <Compile Include="JSCaller\IOleClientSite.cs" />
